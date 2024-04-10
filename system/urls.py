@@ -1,4 +1,4 @@
-from .views import logout, login, predict, insert, update, delete
+from .views import logout, login, insert, update, delete
 from django.urls import path
 
 urlpatterns = [
@@ -7,6 +7,4 @@ urlpatterns = [
     path('update/', update, name='update'),
     path('delete/', delete, name='delete'),
     path('logout/', logout, name='logout'),
-
-    path('predict/', predict, name='predict'),
 ]
