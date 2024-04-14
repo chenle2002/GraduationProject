@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.urls import path, include
 
+from chenle import views
+
 urlpatterns = [
     path('system/', include('system.urls')),
     path('chenle/', include('chenle.urls')),
-    path('wei/', include('wei.urls'))
+    path('wei/', include('wei.urls')),
+    path('api/patent/list/', views.PatentView.as_view({'get': 'list'}), name='patent_list'),
 ]
