@@ -5,7 +5,10 @@ from chenle.TextPredictor import predictor_instance
 
 # Django视图函数
 def predict_text(request):
-    text = "本发明公开了一种基于深度学习的动脉瘤分割方法和装置，其中，该方法包括：获取头部扫描CT血管造影CTA图像"
+    if request.GET.get('text') is None:
+        text = "本发明公开了一种基于深度学习的动脉瘤分割方法和装置，其中，该方法包括：获取头部扫描CT血管造影CTA图像"
+    else:
+        text = request.GET.get('text')
 
     # 开始计时
     start_time = time.time()
