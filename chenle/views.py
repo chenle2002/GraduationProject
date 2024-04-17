@@ -1,3 +1,4 @@
+import base64
 import os
 import time
 
@@ -140,3 +141,18 @@ def download(request):
             return response
     else:
         return HttpResponse('文件不存在')
+
+
+def getinfobyid(request):
+    id = request.GET.get('id')
+    node_info = entity.NodeInfo.objects.get(id=id)
+
+    # 将查询到的对象和图片数据一起封装成JSON格式
+    node_dict = {
+        'id': node_info.id,
+        'name': node_info.name,
+        'info': node_info.info,
+    }
+
+    # 返回JSON数据到前端
+    return JsonResponse(node_dict)
