@@ -13,9 +13,9 @@ class TextPredictor:
 
     def setup(self, model_name, dataset_name):
         self.key = {
-            0: '0', 1: '1', 2: '2', 3: '3', 4: '4',
-            5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
-            10: '10', 11: '11'
+            0: '电力系统故障识别与预测', 1: '人工智能应用和平台', 2: '人脸识别与表情分析', 3: '语音识别与情感分析', 4: '卷积神经网络',
+            5: 'Transformer', 6: 'U-net模型', 7: '医学图像分割', 8: '对话系统与语义理解', 9: '视频分析与行为识别',
+            10: '医学领域的文本处理', 11: '通用文本处理与语言模型', 12: '文本分类与语义分析', 13: '车辆识别与自动驾驶', 14: '图像识别与神经网络',
         }
         x = import_module('chenle.bert_model.models.' + model_name)
         self.config = x.Config(dataset_name)

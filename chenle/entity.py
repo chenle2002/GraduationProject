@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class PatentData(models.Model):
-    id = models.CharField(max_length=255, blank=True, null=True)
+    id = models.CharField(max_length=255, blank=True,primary_key=True)
     序号 = models.CharField(max_length=255, blank=True, null=True)
     标题_中文_field = models.CharField(db_column='标题 (中文)', max_length=255, blank=True, null=True)  # Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.
     标题_英文_field = models.TextField(db_column='标题 (英文)', blank=True, null=True)  # Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.

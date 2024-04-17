@@ -1,4 +1,8 @@
+import os
 import time
+
+import pandas as pd
+from django.views.decorators.csrf import csrf_exempt
 
 from chenle.TextPredictor import predictor_instance
 from rest_framework.views import APIView
@@ -35,12 +39,51 @@ def predict_text(request):
     return JsonResponse({'result': result, 'elapsed_time': elapsed_time + "秒"})
 
 
-def delete(request):
-    id = request.GET.get('id')
-    if id is None:
-        return HttpResponse("删除序号为空")
-    entity.PatentData.objects.filter(序号=id).delete()
-    return HttpResponse("删除成功")
+@csrf_exempt
+def process_excel(request):
+    if request.method == 'POST' and request.FILES['file']:
+        excel_file = request.FILES['file']
+        print("开始执行批量打标签")
+
+        # 获取前端传递的列索引字符串和文件名
+        column_indices_str = request.POST['columns']
+        user_name = request.POST['user_name']
+
+        column_indices = [int(idx) for idx in column_indices_str.split(',') if idx.isdigit()]
+        file_name = excel_file.name
+
+        # 读取Excel文件
+        df = pd.read_excel(excel_file)
+
+        # 拼合指定列数据得到新数据列
+        new_data = ""
+        for idx in column_indices:
+            new_data += df.iloc[:, idx].astype(str)
+
+        df['摘要+技术摘要'] = new_data
+
+        # 创建预测结果列
+        predictions = []
+
+        # 逐行调用predict方法并将结果添加到predictions列表中
+        for index, row in df.iterrows():
+            prediction = predictor_instance.predict(row['摘要+技术摘要'])
+            predictions.append(prediction)
+
+        # 将预测结果列添加到DataFrame中
+        df['预测结果'] = predictions
+
+        print("任务完成")
+        # 保存处理后的Excel文件到后端本地
+        if not os.path.exists('chenle/excel/'):
+            os.makedirs('chenle/excel/')
+        df.to_excel('chenle/excel/' + user_name + '_processed_' + file_name, index=False)
+        print("文件保存到：" + 'chenle/excel/' + user_name + '_processed_' + file_name)
+        # 返回处理后的Excel文件路径
+        return HttpResponse('Excel文件处理成功')
+    else:
+        return HttpResponse('请上传Excel文件')
+
 
 class PatentView(ViewSetMixin, APIView):
     def list(self, request, *args, **kwargs):
@@ -68,3 +111,32 @@ class PatentView(ViewSetMixin, APIView):
 
         return JsonResponse({'status': status.HTTP_200_OK, 'data': data},
                             status=status.HTTP_200_OK)
+
+
+def delete(request):
+    id = request.GET.get('id')
+    if id is None:
+        return HttpResponse("删除序号为空")
+    entity.PatentData.objects.filter(序号=id).delete()
+    return HttpResponse("删除成功")
+
+
+def judge_exist(request):
+    file_path = 'chenle/excel/' + request.GET.get('user_name') + '_processed_' + request.GET.get('file_name')
+    print(file_path)
+    if os.path.exists(file_path):
+        return HttpResponse("yes")
+    else:
+        return HttpResponse("no")
+
+
+def download(request):
+    file_path = 'chenle/excel/' + request.GET.get('user_name') + '_processed_' + request.GET.get('file_name')
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as f:
+            response = HttpResponse(f.read(),
+                                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="data.xlsx"'
+            return response
+    else:
+        return HttpResponse('文件不存在')
