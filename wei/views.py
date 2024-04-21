@@ -18,6 +18,9 @@ from chenle import entity
 from chenle.serializers.Patent import PatentSerializer
 from rest_framework.pagination import PageNumberPagination
 
+from wei.SearchQueries.wen_xin_yi_yan import get_syntax_from_wenxinyiyan
+
+
 def get_ipc_from_text(request):
     text = request.GET.get('text')
     if (text!=None and len(text)>0):
@@ -67,3 +70,9 @@ def build_syntax_by_target(request):
                             status=status.HTTP_200_OK)
     else:
         return HttpResponse('未上传文件')
+
+def get_syntax_wenxinyiyan(request):
+    text = request.GET.get('text')
+    res =  get_syntax_from_wenxinyiyan(text)
+    return JsonResponse({'status': status.HTTP_200_OK, 'data': res},
+                            status=status.HTTP_200_OK)

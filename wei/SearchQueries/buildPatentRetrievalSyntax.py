@@ -327,7 +327,6 @@ class PatentRetrievalSyntaxBuilder:
         return syntax
 
     def get_output_res(self, syntax):
-        print(1111111111111111)
         print(syntax)
         item_list = syntax.split(' or ')
         res = ''
