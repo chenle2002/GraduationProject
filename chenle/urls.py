@@ -1,5 +1,4 @@
-from . import views
-from .views import predict_text, delete, process_excel, judge_exist, download, getinfobyid
+from .views import predict_text, delete, process_excel, judge_exist, download, getinfobyid, collect, getusercollect, getrecord
 from django.urls import path
 
 urlpatterns = [
@@ -9,4 +8,8 @@ urlpatterns = [
     path('judge_exist/', judge_exist, name='judge_exist'),
     path('download/', download, name='download'),
     path('getinfobyid/', getinfobyid, name='getinfobyid'),
+
+    path('collect/', collect, name='collect'),
+    path('getusercollect/', getusercollect, name='getusercollect'),
+    path('getrecord/', getrecord, name='getrecord'),
 ]

@@ -1,8 +1,10 @@
 import base64
+import datetime
 import os
 import time
 
 import pandas as pd
+from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 
 from chenle.TextPredictor import predictor_instance
@@ -16,6 +18,8 @@ from chenle import entity
 from chenle.serializers.Patent import PatentSerializer
 from rest_framework.pagination import PageNumberPagination
 
+from chenle.serializers.Record import RecordSerializer
+
 
 # Django视图函数
 def predict_text(request):
@@ -24,6 +28,7 @@ def predict_text(request):
     else:
         text = request.GET.get('text')
 
+    user_name = request.GET.get('user_name')
     # 开始计时
     start_time = time.time()
 
@@ -37,6 +42,7 @@ def predict_text(request):
 
     print({'result': result, 'elapsed_time': elapsed_time + "秒"})
 
+    entity.Record.objects.create(user_name=user_name, text=text, predict=result, create_time=datetime.datetime.now())
     return JsonResponse({'result': result, 'elapsed_time': elapsed_time + "秒"})
 
 
@@ -156,3 +162,58 @@ def getinfobyid(request):
 
     # 返回JSON数据到前端
     return JsonResponse(node_dict)
+
+
+def collect(request):
+    patent_id = request.GET.get('id')
+    user_name = request.GET.get('user_name')
+    entity.UserPatent.objects.create(user_name=user_name, patent_id=patent_id)
+    return HttpResponse('收藏成功！')
+
+
+def getusercollect(request):
+    user_name = request.GET.get('user_name')
+    user_patents = entity.UserPatent.objects.filter(user_name=user_name)  # 通过用户名筛选相关的专利记录
+    patent_ids = set(user_patent.patent_id for user_patent in user_patents)  # 将专利ID放入集合中
+
+    # 查询包含在user_patent_ids中的所有专利数据
+    queryset = entity.PatentData.objects.filter(id__in=patent_ids).order_by('id')
+
+    # 分页
+    paginator = Paginator(queryset, settings.REST_FRAMEWORK['PAGE_SIZE'])
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 将分页后的结果序列化
+    serializer = PatentSerializer(page_obj, many=True)
+
+    # 构建返回数据格式
+    data = {
+        'list': serializer.data,
+        'pageSize': settings.REST_FRAMEWORK['PAGE_SIZE'],
+        'total': queryset.count()
+    }
+
+    return JsonResponse({'status': status.HTTP_200_OK, 'data': data}, status=status.HTTP_200_OK)
+
+
+def getrecord(request):
+    user_name = request.GET.get('user_name')
+    queryset = entity.Record.objects.filter(user_name=user_name)  # 通过用户名筛选相关的记录
+
+    # 分页
+    paginator = Paginator(queryset, settings.REST_FRAMEWORK['PAGE_SIZE'])
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 将分页后的结果序列化
+    serializer = RecordSerializer(page_obj, many=True)
+
+    # 构建返回数据格式
+    data = {
+        'list': serializer.data,
+        'pageSize': settings.REST_FRAMEWORK['PAGE_SIZE'],
+        'total': queryset.count()
+    }
+
+    return JsonResponse({'status': status.HTTP_200_OK, 'data': data}, status=status.HTTP_200_OK)

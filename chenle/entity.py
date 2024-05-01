@@ -45,3 +45,21 @@ class NodeInfo(models.Model):
     class Meta:
         managed = True
         db_table = 'node_info'
+class UserPatent(models.Model):
+    id = models.IntegerField(primary_key=True)
+    user_name = models.CharField(max_length=50)
+    patent_id = models.IntegerField()
+
+    class Meta:
+        managed = True
+        db_table = 'user_patent'
+
+class Record(models.Model):
+    user_name = models.CharField(max_length=20, blank=True, null=True)
+    text = models.CharField(max_length=500, blank=True, null=True)
+    predict = models.CharField(max_length=20, blank=True, null=True)
+    create_time = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'record'
